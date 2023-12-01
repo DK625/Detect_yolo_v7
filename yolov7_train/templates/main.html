@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            background-color: #3498db;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #3498db;
+            color: #fff;
+        }
+        .b0
+        {
+            background-color: rgb(116, 174, 174);
+        }
+        .b2
+        {
+            background-color: rgb(112, 184, 160);
+        }
+    </style>
+    <title>Quản lý mô hình</title>
+</head>
+<body>
+
+    <header>
+        <h1>Quản lý mô hình</h1>
+    </header>
+
+    <main>
+        <p><strong>Họ và tên:</strong> Lê Ngọc Huyền </p>
+        <p><strong>Mã sinh viên:</strong> B20DCCN333</p>
+        <p><strong>Quản lý bài toán:</strong>Nhận dạng vùng đối tượng</p>
+
+
+        <table id="modelTable">
+            <thead>
+                <tr class="value_item">
+                    <th scope="col" class="col-1">ID</th>
+                    <th scope="col" class="col-2">Tên</th>
+                    <th scope="col" class="col-2">Ngày huấn luyện</th>
+                    <th scope="col" class="col-2">Đường dẫn</th>
+                    <th scope="col" class="col-2">Mô tả</th>
+                    <th scope="col" class="col-2">Số lượng mẫu</th>
+                    <th scope="col" class="col-2">Acc</th>
+                    <th scope="col" class="col-2">Pre</th>
+                    <th scope="col" class="col-2">Re</th>
+                    <th scope="col" class="col-2">F1</th>
+                    <th scope="col" class="col-2">Hoạt động</th>
+                    <th scope="col" class="col-2">Chức năng</th>
+                </tr>
+            </thead>
+            <tbody id="modelBody">
+
+            </tbody>
+        </table>
+        <button onclick="window.location.href='/train'">Chuyển sang trang Train</button>
+
+        <script>
+            // Hàm để gọi API và cập nhật DOM
+            async function fetchAndDisplayModels() {
+                try {
+                    const response = await fetch('http://localhost:5000/api/model');
+                    const data = await response.json();
+
+                    if (data.models) {
+                        const tableHeader = document.querySelector('#modelTable .value_item');
+                        const tableBody = document.querySelector('#modelBody');
+
+                        // Xóa nội dung cũ
+                        tableHeader.innerHTML = '';
+                        tableBody.innerHTML = '';
+
+                        // Tạo cột header
+                        const headersOrder = [
+                            'id', 'ten', 'ngayhl', 'duongdan', 'mota', 'soluongmau',
+                            'acc', 'pre', 're', 'f1', 'hoatdong'
+                        ];
+                        const headers = [
+                            'ID', 'Tên', 'Ngày huấn luyện', 'Đường dẫn', 'Mô tả', 'Số lượng mẫu',
+                            'Acc', 'Pre', 'Re', 'F1', 'Hoạt động', 'Chức năng'
+                        ];
+<!--                        const headers = Object.keys(data.models[0]);-->
+                        headers.forEach(header => {
+                            const th = document.createElement('th');
+                            th.textContent = header;
+                            tableHeader.appendChild(th);
+                        });
+
+                        // Thêm dữ liệu mô hình
+                        data.models.forEach(model => {
+                            const tr = document.createElement('tr');
+
+                            headersOrder.forEach(header => {
+                                const td = document.createElement('td');
+                                td.textContent = model[header];
+                                tr.appendChild(td);
+                            });
+
+                            // Thêm nút Xóa và Xem
+                            const tdButtons = document.createElement('td');
+                            const deleteButton = document.createElement('button');
+                            deleteButton.className = 'btn btn-primary b0';
+                            deleteButton.textContent = 'Xóa';
+
+                            deleteButton.addEventListener('click', () => {
+                                const confirmDelete = confirm('Chắc chắn muốn xoá?');
+                                if (confirmDelete) {
+                                    // Gọi API để xoá
+                                    deleteModelById(model.id);
+                                    fetchAndDisplayModels();
+                                }
+                            });
+
+                            tdButtons.appendChild(deleteButton);
+
+<!--                            const viewButton = document.createElement('button');-->
+<!--                            viewButton.className = 'btn btn-primary b2';-->
+<!--                            viewButton.textContent = 'Xem';-->
+<!--                            tdButtons.appendChild(viewButton);-->
+
+                            tr.appendChild(tdButtons);
+
+                            // Thêm dòng vào bảng
+                            tableBody.appendChild(tr);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Đã xảy ra lỗi:', error);
+                    alert('Đã xảy ra lỗi khi gọi API.');
+                }
+            }
+
+            async function deleteModelById(modelId) {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/model?model_id=${modelId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        // Xoá hàng trong DOM nếu API xoá thành công
+                        const tableRow = document.getElementById(`modelRow${modelId}`);
+                        if (tableRow) {
+                            tableRow.remove();
+                        }
+
+                        alert('Đã xoá mô hình thành công!');
+                    } else {
+                        alert(`Đã xảy ra lỗi khi xoá mô hình: ${response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error('Đã xảy ra lỗi:', error);
+                    alert('Đã xảy ra lỗi khi gọi API xoá mô hình.');
+                }
+            }
+
+            // Gọi hàm khi trang được tải
+            window.onload = fetchAndDisplayModels;
+        </script>
+
+    </main>
+
+</body>
+</html>

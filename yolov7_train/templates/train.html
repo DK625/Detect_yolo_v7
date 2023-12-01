@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý mô hình</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #ecf0f1;
+        }
+
+        header {
+            background-color: #3498db;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background-color: #ecf0f1;
+        }
+
+        .column {
+            flex: 1;
+            margin: 0 10px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.3s;
+        }
+
+        .column:hover {
+            transform: scale(1.02);
+        }
+
+        h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        /* Primary Button Style */
+        .btn-primary {
+            background-color: #2ecc71;
+            color: #fff;
+            padding: 12px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #27ae60;
+        }
+
+        /* Danger Button Style */
+        .btn-danger {
+            background-color: #e74c3c;
+            color: #fff;
+            padding: 12px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        #imageInfo {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        #fileList {
+            padding: 0;
+            margin: 0;
+        }
+
+        #fileList li {
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        #fileList label {
+            display: inline-block;
+            margin-right: 10px;
+            color: #333;
+        }
+
+        input[type="file"] {
+            margin-top: 10px;
+            
+            padding: 12px;
+            border-radius: 5px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Quản lý mô hình.
+            Iu a Hoàng
+        </h1>
+    </header>
+
+    <div class="container">
+
+            <div class="column">
+                <h4>Thông tin mô hình</h4>
+                <ul>
+                    <li><strong>Tên mô hình:</strong> <span id="modelName"></span></li>
+                    <li><strong>Ngày huấn luyện:</strong> <span id="trainingDate"></span></li>
+                    <li><strong>Đường dẫn:</strong> <span id="modelPath"></span></li>
+                    <li><strong>Mô tả:</strong> <span id="modelDescription"></span></li>
+                    <li><strong>Số lượng mẫu:</strong> <span id="sampleCount"></span></li>
+                    <li><strong>Acc:</strong> <span id="accuracy"></span></li>
+                    <li><strong>Pre:</strong> <span id="precision"></span></li>
+                    <li><strong>Re:</strong> <span id="recall"></span></li>
+                    <li><strong>F1:</strong> <span id="f1Score"></span></li>
+                    <li><strong>Hoạt động:</strong> <span id="isActive"></span></li>
+                </ul>
+                <button class="btn btn-primary">Lưu</button>
+                <button class="btn btn-danger">Xóa</button>
+            </div>
+            <div class="column">
+                <div id="imageInfo">
+                    <h2>Thông tin tệp</h2>
+                    <ul id="fileList"></ul>
+                </div>
+                <button onclick="trainModel()">Huấn luyện</button>
+
+                <input type="file" id="folderInput" webkitdirectory directory multiple>
+            </div>
+
+    </div>
+
+    <script>
+        function handleFiles() {
+            var filesInput = document.getElementById('folderInput');
+            var fileList = document.getElementById('fileList');
+            fileList.innerHTML = ''; // Clear the list before adding new files
+
+            var files = filesInput.files;
+            var uniqueFileNames = [];
+
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+
+                // Lấy tên file với đuôi
+                var fileNameWithExtension = file.name;
+
+                // Kiểm tra xem tên file đã tồn tại trong danh sách hay chưa
+                if (!uniqueFileNames.includes(fileNameWithExtension)) {
+                    uniqueFileNames.push(fileNameWithExtension);
+
+                    var listItem = document.createElement('li');
+
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'fileCheckbox';
+                    checkbox.value = fileNameWithExtension;
+                    listItem.appendChild(checkbox);
+
+                    var label = document.createElement('label');
+                    label.textContent = fileNameWithExtension;
+                    listItem.appendChild(label);
+
+                    fileList.appendChild(listItem);
+                }
+            }
+        }
+
+
+        async function trainModel() {
+            // Lấy danh sách các checkbox đã được chọn
+            var checkboxes = document.getElementsByName('fileCheckbox');
+            var selectedFiles = Array.from(checkboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.value);
+
+            // Logic huấn luyện ở đây, sử dụng selectedFiles
+
+            try {
+                alert(`Calling API ...`);
+                // Thực hiện yêu cầu HTTP POST đến API
+                const response = await fetch('http://localhost:5000/api/train', {
+                    method: 'POST',
+                });
+
+                // Kiểm tra xem yêu cầu có thành công hay không
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`Call API Successfully !`);
+                    displayModelInfo(result.mohinh);
+                } else {
+                    alert(`Đã xảy ra lỗi khi gọi API: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Đã xảy ra lỗi:', error);
+                alert('Đã xảy ra lỗi khi gọi API.');
+            }
+            // alert("Đã chọn các tệp: " + selectedFiles.join(', '));
+        }
+
+        async function saveResult() {
+<!--            nếu chưa có thông tin mô hình huấn luyện hoặc mô hình đã được xoá trước đó-->
+<!--            hiện thông báo: alert(`Chưa có thông tin mô hình được huấn luyện!`);-->
+<!--            sau đó return không cần làm thêm gì cả-->
+
+            if (document.getElementById('modelName').textContent === '') {
+                // Hiển thị thông báo khi chưa có thông tin mô hình hoặc mô hình đã được xoá
+                alert(`Chưa có thông tin mô hình được huấn luyện hoặc mô hình đã được xoá trước đó!`);
+                return; // Không làm gì thêm
+            }
+
+
+            alert('Calling API save_result ...');
+            try {
+                // Thực hiện yêu cầu HTTP POST đến API
+                const response = await fetch('http://localhost:5000/api/save_result', {
+                    method: 'POST',
+                });
+
+                // Kiểm tra xem yêu cầu có thành công hay không
+                if (response.ok) {
+                    const result = await response.json();
+                    alert('Đã lưu model');
+                    // 1. Xóa thông tin hiển thị về trạng thái trước khi huấn luyện
+                    document.getElementById('modelName').textContent = '';
+                    document.getElementById('trainingDate').textContent = '';
+                    document.getElementById('modelPath').textContent = '';
+                    document.getElementById('modelDescription').textContent = '';
+                    document.getElementById('sampleCount').textContent = '';
+                    document.getElementById('accuracy').textContent = '';
+                    document.getElementById('precision').textContent = '';
+                    document.getElementById('recall').textContent = '';
+                    document.getElementById('f1Score').textContent = '';
+                    document.getElementById('isActive').textContent = '';
+
+                    // 2. Gỡ bỏ các checkbox đã chọn
+                    var checkboxes = document.getElementsByName('fileCheckbox');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+
+                    // 3. Gỡ bỏ thông tin từ các thẻ HTML hiển thị thông tin mô hình
+                    var fileList = document.getElementById('fileList');
+                    fileList.innerHTML = '';
+
+                } else {
+                    // alert('Đã xảy ra lỗi khi gọi API.');
+                    alert(`Đã xảy ra lỗi khi gọi API: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Đã xảy ra lỗi:', error);
+                alert('Đã xảy ra lỗi khi gọi API.');
+            }
+        }
+
+        function resetModel() {
+            // 1. Xóa thông tin hiển thị về trạng thái trước khi huấn luyện
+            document.getElementById('modelName').textContent = '';
+            document.getElementById('trainingDate').textContent = '';
+            document.getElementById('modelPath').textContent = '';
+            document.getElementById('modelDescription').textContent = '';
+            document.getElementById('sampleCount').textContent = '';
+            document.getElementById('accuracy').textContent = '';
+            document.getElementById('precision').textContent = '';
+            document.getElementById('recall').textContent = '';
+            document.getElementById('f1Score').textContent = '';
+            document.getElementById('isActive').textContent = '';
+
+            // 2. Gỡ bỏ các checkbox đã chọn
+            var checkboxes = document.getElementsByName('fileCheckbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+
+            // 3. Gỡ bỏ thông tin từ các thẻ HTML hiển thị thông tin mô hình
+            var fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+
+            // Hiển thị thông báo
+            alert('Reset to pre-train state ...');
+        }
+
+
+        // Gán sự kiện khi có sự thay đổi trong input file
+        document.getElementById('folderInput').addEventListener('change', handleFiles);
+
+        // Gán sự kiện khi click vào nút Lưu
+        document.querySelector('.btn-primary').addEventListener('click', saveResult);
+
+        document.querySelector('.btn-danger').addEventListener('click', resetModel);
+
+
+        // Gán sự kiện khi có sự thay đổi trong input file
+        document.getElementById('folderInput').addEventListener('change', handleFiles);
+
+        function displayModelInfo(modelInfo) {
+            // Update HTML elements with model information
+            document.getElementById('modelName').textContent = modelInfo.ten;
+            document.getElementById('trainingDate').textContent = modelInfo.ngayhl;
+            document.getElementById('modelPath').textContent = modelInfo.duongdan;
+            document.getElementById('modelDescription').textContent = modelInfo.mota;
+            document.getElementById('sampleCount').textContent = modelInfo.soluongmau;
+            document.getElementById('accuracy').textContent = modelInfo.acc;
+            document.getElementById('precision').textContent = modelInfo.pre;
+            document.getElementById('recall').textContent = modelInfo.re;
+            document.getElementById('f1Score').textContent = modelInfo.f1;
+            document.getElementById('isActive').textContent = modelInfo.hoatdong ? 'Hoạt động' : 'Không hoạt động';
+        }
+    </script>
+<button onclick="window.location.href='/'">Chuyển sang trang Main</button>
+</body>
+</html>

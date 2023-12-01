@@ -1,0 +1,22 @@
+#train: ../train_test/train
+#val: ../train_test/test
+train: C:\Users\Admin\Desktop\Yolov7_Mimi\yolov7_train\train_test\train
+val: C:\Users\Admin\Desktop\Yolov7_Mimi\yolov7_train\train_test\test
+nc: 16
+names:
+  - dog
+  - person
+  - cat
+  - tv
+  - car
+  - meatballs
+  - marinarasauce
+  - tomatosoup
+  - chickennoodlesoup
+  - frenchonionsoup
+  - chickenbreast
+  - ribs
+  - pulledpork
+  - hamburger
+  - cavity
+  - van_tay
